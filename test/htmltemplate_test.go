@@ -351,3 +351,28 @@ func TestHTMLFuncPipeline(t *testing.T) {
 	fmt.Println(string(body))
 
 }
+
+
+// ini cara agar si file tidak diparse atau di render ulang-ulang karna setiap kali parse itu memakan memory, dan yang paling disarankan itu menggunakan seperti ini.
+//go:embed resources/*.gohtml
+var caching embed.FS
+var mytemplates = template.Must(template.ParseFS(caching, "resources/*.gohtml"))
+
+func HTMLCaching(w http.ResponseWriter, r *http.Request)  {
+	mytemplates.ExecuteTemplate(w, "index.gohtml", "hello world")
+}
+
+
+func TestHTMLCaching(t *testing.T) {
+	
+	request, _ := http.NewRequest(http.MethodGet, "http://localhost:8080", nil)
+
+	recorder := httptest.NewRecorder()
+
+	HTMLCaching(recorder, request)
+
+	body, _ := io.ReadAll(recorder.Result().Body)
+
+	fmt.Println(string(body))
+
+}
